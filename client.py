@@ -19,9 +19,8 @@ class Client:
     def try_decode(self):
         equal = False
         num = 0
-        range_generator = (x for x in range(10**9, 10**10))
         while not equal and num < 10**10:
-            num = next(range_generator)
+            num = int(self._sock.recv(BUFFER_SIZE).decode())
             print(num)
             if md5(str(num).encode()).hexdigest().upper() == CODE:
                 equal = True

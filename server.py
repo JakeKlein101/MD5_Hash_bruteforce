@@ -2,6 +2,7 @@ import socket
 from threading import Thread
 import pickle
 from consts import *
+import random
 
 
 class Client(Thread):
@@ -9,24 +10,35 @@ class Client(Thread):
         Thread.__init__(self)
         self._client_socket = client_socket
         self._cpu_cores = 0
+        n = random.randint(10**4, (10**10) - 1)
+        self._range_gen = (x for x in range((10 ** 9) + n, (10 ** 10) - n))
 
     def run(self):
         self.main_loop()
 
     def main_loop(self):
         self.receive_initial_data()
-        encoded_packet = self._client_socket.recv(BUFFER_SIZE)
-        packet = pickle.loads(encoded_packet)
-        # if the tuple has only a 0 its a failed attempt, if it has a number its the answer.
-        if packet[0] != 0:
-            print(f"The result is:{packet[0]}")
-        else:
-            print("No matches in thread")
+        try:
+            while True:
+                num = next(self._range_gen)
+                self._client_socket.sendall(str(num).encode())
+                print(num)
+        except StopIteration:
+            encoded_packet = self._client_socket.recv(BUFFER_SIZE)
+            print("thread done")
+            packet = pickle.loads(encoded_packet)
+            # if the tuple has only a 0 its a failed attempt, if it has a number its the answer.
+
+            if packet[0] != 0:
+                print(f"The result is:{packet[0]}")
+            else:
+                print("No matches in thread")
 
     def receive_initial_data(self):
         received_initial_packet = pickle.loads(self._client_socket.recv(BUFFER_SIZE))
         # Initial packet contains only core amount
         self._cpu_cores = received_initial_packet[0]
+        print("init")
 
 
 class Server:
