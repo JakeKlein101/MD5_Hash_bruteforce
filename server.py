@@ -2,24 +2,33 @@ import socket
 from threading import Thread
 from hashlib import md5
 import pickle
-
-CODE = "EC9C0F7EDCC18A98B1F31853B1813301"
-IP_ADDRESS = "127.0.0.1"
-PORT = 8820
-BUFFER_SIZE = 4096
+from consts import *
 
 
 class Client(Thread):
     def __init__(self, client_socket):
         Thread.__init__(self)
         self._client_socket = client_socket
-        self._cpu_count = 0
+        self._cpu_cores = 0
 
     def run(self):
         self.receive_data()
 
+    def main_loop(self):
+        self.receive_initial_data()
+        ranges = [num for num in range(10**9, (10**10) - 1)]
+        packet = self.receive_data()
+        while packet[0] != 0:  # if the first index in the tuple = 0, its a halt packet.
+            self._client_socket.sendall(ranges[:self._cpu_cores])
+        print("Halted")
+
     def receive_data(self):
-        received_content = pickle.loads(self._client_socket.recv(BUFFER_SIZE))
+        return pickle.loads(self._client_socket.recv(BUFFER_SIZE))  # returns tuple
+
+    def receive_initial_data(self):
+        received_initial_packet = pickle.loads(self._client_socket.recv(BUFFER_SIZE))
+        # Initial packet contains only core amount
+        self._cpu_cores = received_initial_packet[-1]
 
 
 class Server:
@@ -28,9 +37,9 @@ class Server:
         self._client_list = []
 
     def start(self):
-        self._sock.bind((IP_ADDRESS, PORT))
+        self._sock.bind((SERVER_IP_ADDRESS, SERVER_PORT))
         self._sock.listen(1)
-        print(f"Server has been binded to the IP: {IP_ADDRESS} port: {PORT}")
+        print(f"Server has been binded to the IP: {SERVER_IP_ADDRESS} port: {SERVER_PORT}")
         self.server_main_loop()
 
     def server_main_loop(self):
