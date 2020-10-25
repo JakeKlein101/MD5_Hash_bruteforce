@@ -11,26 +11,23 @@ class Client(Thread):
         self._cpu_cores = 0
 
     def run(self):
-        self.receive_data()
+        self.main_loop()
 
     def main_loop(self):
         self.receive_initial_data()
-        ranges = [num for num in range(10**9, (10**10) - 1)]
+        ranges = [num for num in range(10**9, 10**10)]
         self._client_socket.sendall(ranges[:self._cpu_cores])
-        packet = self.receive_data()
+        packet = pickle.loads(self._client_socket.recv(BUFFER_SIZE))
         # if the tuple has only a 0 its a failed attempt, if it has a number its the answer.
         if packet[0] != 0:
             print(f"The result is:{packet[0]}")
         else:
             print("No matches in thread")
 
-    def receive_data(self):
-        return pickle.loads(self._client_socket.recv(BUFFER_SIZE))  # returns tuple
-
     def receive_initial_data(self):
         received_initial_packet = pickle.loads(self._client_socket.recv(BUFFER_SIZE))
         # Initial packet contains only core amount
-        self._cpu_cores = received_initial_packet[-1]
+        self._cpu_cores = received_initial_packet[0]
 
 
 class Server:
