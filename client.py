@@ -11,7 +11,7 @@ class Client:
         self._cpu_cores = os.cpu_count()
 
     def start(self):
-        # self._sock.connect((SERVER_IP_ADDRESS, SERVER_PORT))
+        self._sock.connect((SERVER_IP_ADDRESS, SERVER_PORT))
         print(f"cpu count:{self._cpu_cores}")
         print(f"connected to server. IP:{SERVER_IP_ADDRESS}, PORT:{SERVER_PORT}.")
         self.main_loop()
