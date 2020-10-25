@@ -39,7 +39,7 @@ class Server:
             print(f"{client_address} just connected")
             client = Client(client_socket)
             self._client_list.append(client)
-            Client.start()
+            client.start()
 
 
 def main():
