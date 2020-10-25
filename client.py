@@ -11,17 +11,23 @@ class Client:
         self._cpu_cores = os.cpu_count()
 
     def start(self):
-        self._sock.connect((SERVER_IP_ADDRESS, SERVER_PORT))
+        # self._sock.connect((SERVER_IP_ADDRESS, SERVER_PORT))
         print(f"cpu count:{self._cpu_cores}")
         print(f"connected to server. IP:{SERVER_IP_ADDRESS}, PORT:{SERVER_PORT}.")
         self.main_loop()
 
     def try_decode(self):
-        ranges = pickle.loads(self._sock.recv(BUFFER_SIZE))
-        for num in ranges:
-            if md5(num.encode()).hexdigest().upper() == CODE:
-                return num
-        return 0
+        equal = False
+        num = 0
+        range_generator = (x for x in range(10**9, 10**10))
+        while not equal and num < 10**10:
+            num = next(range_generator)
+            print(num)
+            if md5(str(num).encode()).hexdigest().upper() == CODE:
+                equal = True
+        if not equal:
+            return 0
+        return num
 
     def main_loop(self):
         self._sock.sendall(pickle.dumps(tuple([self._cpu_cores])))  # initial message

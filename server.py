@@ -15,9 +15,8 @@ class Client(Thread):
 
     def main_loop(self):
         self.receive_initial_data()
-        ranges = [num for num in range(10**9, 10**10)]
-        self._client_socket.sendall(ranges[:self._cpu_cores])
-        packet = pickle.loads(self._client_socket.recv(BUFFER_SIZE))
+        encoded_packet = self._client_socket.recv(BUFFER_SIZE)
+        packet = pickle.loads(encoded_packet)
         # if the tuple has only a 0 its a failed attempt, if it has a number its the answer.
         if packet[0] != 0:
             print(f"The result is:{packet[0]}")
