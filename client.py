@@ -1,5 +1,4 @@
 import socket
-from threading import Thread
 from hashlib import md5
 import os
 import pickle
@@ -15,12 +14,13 @@ class Client:
         self._sock.connect((SERVER_IP_ADDRESS, SERVER_PORT))
         print(f"cpu count:{self._cpu_count}")
         print(f"connected to server. IP:{SERVER_IP_ADDRESS}, PORT:{SERVER_PORT}.")
+        self.main_loop()
 
     def try_decode(self):
         ranges = pickle.loads(self._sock.recv(BUFFER_SIZE))
-        trying_hash = md5(CODE.encode()).hexdigest().upper()
-        if trying_hash == CODE:
-            return True
+        for num in ranges:
+            if md5(num.encode()).hexdigest().upper() == CODE:
+                return True
         return False
 
     def main_loop(self):
@@ -31,7 +31,6 @@ class Client:
 
 
 def main():
-    hashed = md5(b"5").hexdigest().upper()
     client = Client()
     client.start()
 
