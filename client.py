@@ -20,14 +20,17 @@ class Client:
         ranges = pickle.loads(self._sock.recv(BUFFER_SIZE))
         for num in ranges:
             if md5(num.encode()).hexdigest().upper() == CODE:
-                return True
-        return False
+                return num
+        return 0
 
     def main_loop(self):
         while True:
-            if self.try_decode():
-                self._sock.sendall(pickle.dumps(tuple([0])))
+            result = self.try_decode()
+            if result != 0:
+                self._sock.sendall(pickle.dumps(tuple([result])))
                 break
+            else:
+                self._sock.sendall(pickle.dumps(tuple([0])))
 
 
 def main():

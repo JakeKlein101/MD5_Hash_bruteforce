@@ -1,6 +1,5 @@
 import socket
 from threading import Thread
-from hashlib import md5
 import pickle
 from consts import *
 
@@ -17,10 +16,13 @@ class Client(Thread):
     def main_loop(self):
         self.receive_initial_data()
         ranges = [num for num in range(10**9, (10**10) - 1)]
+        self._client_socket.sendall(ranges[:self._cpu_cores])
         packet = self.receive_data()
-        while packet[0] != 0:  # if the first index in the tuple = 0, its a halt packet.
-            self._client_socket.sendall(ranges[:self._cpu_cores])
-        print("Halted")
+        # if the tuple has only a 0 its a failed attempt, if it has a number its the answer.
+        if packet[0] != 0:
+            print(f"The result is:{packet[0]}")
+        else:
+            print("No matches in thread")
 
     def receive_data(self):
         return pickle.loads(self._client_socket.recv(BUFFER_SIZE))  # returns tuple
