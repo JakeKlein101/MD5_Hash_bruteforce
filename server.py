@@ -39,7 +39,7 @@ class Client(Thread):
 
     def allocate_range(self):
         start = self._server._edges[0]
-        finish = self._server._edges[1] - self._cpu_cores ** 10
+        finish = self._server._edges[0] + (self._cpu_cores ** 10) / 2
         self._range_start_finish = [start, finish]
         self._server._edges[0] = finish
 
