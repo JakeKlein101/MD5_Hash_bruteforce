@@ -17,16 +17,12 @@ class Client:
         self.main_loop()
 
     def try_decode(self):
-        equal = False
-        num = 0
-        while not equal and num < 10**10:
-            num = int(self._sock.recv(BUFFER_SIZE).decode())
-            print(num)
-            if md5(str(num).encode()).hexdigest().upper() == CODE:
-                equal = True
-        if not equal:
-            return 0
-        return num
+        ranges = pickle.loads(self._sock.recv(BUFFER_SIZE))
+        for rng in ranges:
+            for num in rng:
+                if md5(str(num).encode()).hexdigest().upper() == CODE:
+                    return num
+        return 0
 
     def main_loop(self):
         self._sock.sendall(pickle.dumps(tuple([self._cpu_cores])))  # initial message
