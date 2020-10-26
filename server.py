@@ -14,8 +14,8 @@ class Client(Thread):
 
     def run(self):
         """
-        Overrides the run in the thread parent class and initiates the thread.
-        Using start on a thread objects calls the run function.
+        Overrides the run method in the thread parent class and initiates the thread.
+        Using the start method on a object inheriting from Thread calls the run method.
         """
         self.main_loop()
 
