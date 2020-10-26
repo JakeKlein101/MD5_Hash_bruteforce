@@ -22,14 +22,18 @@ class Client(Thread):
         print(f"ranges are: start -> {self._range_start_finish[0]}, finish -> {self._range_start_finish[1]}")  # debug
         self._client_socket.sendall(pickle.dumps(tuple(self._range_start_finish)))
         print("ranges sent")  # debug
-        encoded_packet = self._client_socket.recv(BUFFER_SIZE)
-        packet = pickle.loads(encoded_packet)
-        print("answer received")  # debug
-        # if the tuple has only a 0 its a failed attempt, if it has a number its the answer.
-        if packet[0] != 0:
-            print(f"The result is:{packet[0]}")
+        try:
+            encoded_packet = self._client_socket.recv(BUFFER_SIZE)
+        except ConnectionResetError as e:
+            print("Thread disconnected")
         else:
-            print("No matches in thread")
+            packet = pickle.loads(encoded_packet)
+            print("answer received")  # debug
+            # if the tuple has only a 0 its a failed attempt, if it has a number its the answer.
+            if packet[0] != 0:
+                print(f"The result is:{packet[0]}")
+            else:
+                print("No matches in thread")
 
     def receive_initial_data(self):
         received_initial_packet = pickle.loads(self._client_socket.recv(BUFFER_SIZE))
@@ -39,7 +43,7 @@ class Client(Thread):
 
     def allocate_range(self):
         start = self._server._edges[0]
-        finish = self._server._edges[0] + (self._cpu_cores ** 10) / 2
+        finish = int(self._server._edges[0] + (self._cpu_cores ** 10) / 2)
         self._range_start_finish = [start, finish]
         self._server._edges[0] = finish
 
