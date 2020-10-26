@@ -19,8 +19,9 @@ class Client:
 
     def try_decode(self):
         range_edges_tuple = pickle.loads(self._sock.recv(BUFFER_SIZE))
-        self._ranges = [num for num in range(range_edges_tuple[0], range_edges_tuple[1])]
+        self._ranges = (num for num in range(range_edges_tuple[0], range_edges_tuple[1]))
         for num in self._ranges:
+            print(num)  # debug
             if md5(str(num).encode()).hexdigest().upper() == CODE:
                 return num
         return 0
