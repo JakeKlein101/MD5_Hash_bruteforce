@@ -2,7 +2,6 @@ import socket
 from threading import Thread
 import pickle
 from consts import *
-import random
 
 
 class Client(Thread):
@@ -10,15 +9,14 @@ class Client(Thread):
         Thread.__init__(self)
         self._client_socket = client_socket
         self._cpu_cores = 0
-        self._range_gen = None
+        self._range_start_finish = []
 
     def run(self):
         self.main_loop()
 
     def main_loop(self):
         self.receive_initial_data()
-        num = next(self._range_gen)
-        self._client_socket.sendall(str(num).encode())
+        self._client_socket.sendall(pickle.dumps(tuple(self._range_start_finish)))
         print(num)
         encoded_packet = self._client_socket.recv(BUFFER_SIZE)
         print("thread done")
@@ -41,6 +39,7 @@ class Server:
     def __init__(self):
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._client_list = []
+        self._absolute_edges = tuple([10 ** 9, 10 ** 10 - 1])
 
     def start(self):
         self._sock.bind((SERVER_IP_ADDRESS, SERVER_PORT))
