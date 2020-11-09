@@ -6,6 +6,11 @@ from consts import *
 import threading
 
 
+class ThreadEnd(Exception):
+    def __init__(self):
+        Exception.__init__(self)
+
+
 class Client:
     def __init__(self):
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -23,19 +28,19 @@ class Client:
         print(f"connected to server. IP:{SERVER_IP_ADDRESS}, PORT:{SERVER_PORT}.")
         self.main_loop()
 
-    def try_decode(self, start, finish):
+    def try_decode(self, start, finish):  # TODO: fix threading
         """
         1. Receives the edges of the range it needs to process from the ranges list.
         2. Goes through the given range and converts each number to MD5 and compares to given hash to check answer.
         3. returns the correct number if it finds it, otherwise 0.
         4. The program runs multiple instances of this function in parallel to maximise results.
         """
+        print("Thread Started")
         for num in range(start, finish):
-            print(num)
             if md5(str(num).encode()).hexdigest().upper() == CODE:
+                print(num)
                 self._result_list.append(num)
-                break
-
+                raise ThreadEnd
         self._result_list.append(0)
 
     def allocate_sub_range(self):
@@ -50,16 +55,15 @@ class Client:
                 break
             self._list_ranges_per_thread.append(tuple([start, finish]))
             self._given_ranges_global[0] = finish
-            print(f"the ranges:{self._list_ranges_per_thread}")
+        print(f"the ranges:{self._list_ranges_per_thread}")
 
     def thread_setup(self):
         thread_list = [threading.Thread(target=self.try_decode, args=(rng[0], rng[1]), daemon=True) for rng in
                        self._list_ranges_per_thread]
         for th in thread_list:
             th.start()
-        # for th in thread_list:
-        #    th.join()
-        print(f"Active threads: {threading.active_count()}")
+        for th in thread_list:
+            th.join()
 
     def main_loop(self):
         """
