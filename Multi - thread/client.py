@@ -38,25 +38,27 @@ class Client:
 
         self._result_list.append(0)
 
-    def allocate_sub_range(self):  # TODO: Optimize allocation.
+    def allocate_sub_range(self):
         """
         Splits the given range into even smaller ranges and places them into a list of tuples.
         """
         self._list_ranges_per_thread = []
         for num in range(0, self._cpu_cores):
             start = self._given_ranges_global[0]
-            finish = start + ((self._cpu_cores**10) // 2)
+            finish = start + (self._cpu_cores**9)
+            if finish > self._given_ranges_global[1]:
+                break
             self._list_ranges_per_thread.append(tuple([start, finish]))
             self._given_ranges_global[0] = finish
-            print(self._list_ranges_per_thread)
+            print(f"the ranges:{self._list_ranges_per_thread}")
 
     def thread_setup(self):
-        thread_list = [threading.Thread(target=self.try_decode, args=(rng[0], rng[1])) for rng in
+        thread_list = [threading.Thread(target=self.try_decode, args=(rng[0], rng[1]), daemon=True) for rng in
                        self._list_ranges_per_thread]
         for th in thread_list:
             th.start()
-        for th in thread_list:
-            th.join()
+        # for th in thread_list:
+        #    th.join()
         print(f"Active threads: {threading.active_count()}")
 
     def main_loop(self):
